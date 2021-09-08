@@ -78,20 +78,19 @@ def get_connection(current_number: str, other_number: str, db: Session = Depends
         try:
             checkGroup = db.query(models.Channel).filter(or_(models.Channel.channelName == groupName1,models.Channel.channelName == groupName2)).one()
             messageList = []
-            messages = db.query(models.Message).join(models.Mobile, models.Message.mobile_id == models.Mobile.id).filter(models.Message.channel_id == checkGroup.id).all()
+            messages = db.query(models.Message).join(models.Mobile, models.Message.mobile_id == models.Mobile.id).filter(models.Message.channel_id == checkGroup.id).order_by(models.Message.createdTime.desc()).all()
             for message in messages:
                 data = {
                     "sender" : message.mobile.number,
                     "message": message.message,
                     "messageId": message.messageID,
-                    "reciever": other_number if message.mobile.number == current_number else current_number
+                    "reciever": other_number if message.mobile.number == current_number else current_number,
                 }
                 messageList.append(data)
-            # currentUser = db.query(models.Mobile).filter(models.Mobile.number == current_number).one()
-            
+            currentUser = db.query(models.Mobile).filter(models.Mobile.number == current_number).one() 
             finalData = {
                 "messageList" : messageList,
-                #"mobile_id" : currentUser,
+                "mobile_id" : currentUser.id,
                 "channel_id" : checkGroup.id
             }
             return {"data":finalData,"message":"Success"}
@@ -107,6 +106,14 @@ def get_connection(current_number: str, other_number: str, db: Session = Depends
                     db_group = models.Group(mobile_id=mobile.id,Channel_id=db_channel.id)
                     db.add(db_group)
                 db.commit()
+                print("vwojefw")
+                currentUser = db.query(models.Mobile).filter(models.Mobile.number == current_number).one()
+                print("ovwjef")
+                finalData = {
+                    "messageList" : [],
+                    "mobile_id" : currentUser.id,
+                    "channel_id" : db_channel.id
+                }
                 return {"data":[],"message":"Success"}
             except Exception as e:
                 db.rollback()
