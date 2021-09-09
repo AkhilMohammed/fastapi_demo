@@ -126,11 +126,9 @@ def get_connection(current_number: str, other_number: str, db: Session = Depends
         groupName1 = current_number+"-"+other_number
         groupName2 = other_number+"-"+current_number
         try:
-            checkGroup = db.query(models.Channel).filter
-            (or_(models.Channel.channelName == groupName1,models.Channel.channelName == groupName2)).one()
+            checkGroup = db.query(models.Channel).filter(or_(models.Channel.channelName == groupName1,models.Channel.channelName == groupName2)).one()
             messageList = []
-            messages = db.query(models.Message).join(models.Mobile, models.Message.mobile_id == models.Mobile.id).filter
-            (models.Message.channel_id == checkGroup.id).order_by(models.Message.createdTime.desc()).all()
+            messages = db.query(models.Message).join(models.Mobile, models.Message.mobile_id == models.Mobile.id).filter(models.Message.channel_id == checkGroup.id).order_by(models.Message.createdTime.desc()).all()
             for message in messages:
                 data = {
                     "sender" : message.mobile.number,
@@ -148,12 +146,11 @@ def get_connection(current_number: str, other_number: str, db: Session = Depends
             }
             return {"data":finalData,"message":"Success"}
         except:
-            '''
-            checkGroup = db.query(models.Channel).filter
-            (or_(models.Channel.channelName == groupName1,models.Channel.channelName == groupName2)).count()
+            
+            checkGroup = db.query(models.Channel).filter(or_(models.Channel.channelName == groupName1,models.Channel.channelName == groupName2)).count()
             if checkGroup:
                 raise HTTPException(status_code=400, detail="Something went wrong")
-            '''
+            
             db_channel = models.Channel(channelName=groupName1)
             db.add(db_channel)
             db.commit()
@@ -171,7 +168,7 @@ def get_connection(current_number: str, other_number: str, db: Session = Depends
                     "mobile_id" : currentUser.id,
                     "channel_id" : db_channel.id
                 }
-                return {"data":[],"message":"Success"}
+                return {"data":finalData,"message":"Success"}
             except Exception as e:
                 db.rollback()
                 raise HTTPException(status_code=500, detail=str(e))
