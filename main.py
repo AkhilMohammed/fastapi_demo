@@ -148,7 +148,7 @@ def get_connection(current_number: str, other_number: str, db: Session = Depends
             }
             return {"data":finalData,"message":"Success"}
         except:
-            ''''
+            '''
             checkGroup = db.query(models.Channel).filter
             (or_(models.Channel.channelName == groupName1,models.Channel.channelName == groupName2)).count()
             if checkGroup:
